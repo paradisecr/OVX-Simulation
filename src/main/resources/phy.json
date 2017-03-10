@@ -1,81 +1,56 @@
 {
   "nodes":[
     {
-      "name":"A",
-      "resource":20,
-      "cost":1
+      "name":"s1",
+      "resource":1,
+      "cost":5
     },
     {
-      "name":"B",
-      "resource":20,
-      "cost":1
+      "name":"s2",
+      "resource":100,
+      "cost":5
     },
     {
-      "name":"C",
-      "resource":20,
-      "cost":1
+      "name":"s3",
+      "resource":100,
+      "cost":5
     },
     {
-      "name":"D",
-      "resource":20,
-      "cost":1
-    },
-    {
-      "name":"E",
-      "resource":20,
-      "cost":1
-    },
-    {
-      "name":"F",
-      "resource":20,
-      "cost":1
+      "name":"s4",
+      "resource":100,
+      "cost":5
     }
-
   ],
   "links":[
     {
-      "src":"A",
-      "dst":"B",
-      "resource":30,
-      "cost":1
+      "src":"s1",
+      "dst":"s2",
+      "resource":100,
+      "cost":5
     },
     {
-      "src":"B",
-      "dst":"C",
-      "resource":30,
-      "cost":1
+      "src":"s1",
+      "dst":"s3",
+      "resource":100,
+      "cost":5
     },
     {
-      "src":"C",
-      "dst":"D",
-      "resource":30,
-      "cost":1
+      "src":"s2",
+      "dst":"s4",
+      "resource":100,
+      "cost":5
     },
     {
-      "src":"D",
-      "dst":"E",
-      "resource":30,
-      "cost":1
+      "src":"s3",
+      "dst":"s4",
+      "resource":100,
+      "cost":5
     },
     {
-      "src":"E",
-      "dst":"F",
-      "resource":30,
-      "cost":1
-    },
-    {
-      "src":"F",
-      "dst":"A",
-      "resource":30,
-      "cost":1
-    },
-    {
-      "src":"B",
-      "dst":"E",
-      "resource":30,
-      "cost":1
+      "src":"s1",
+      "dst":"s4",
+      "resource":100,
+      "cost":5
     }
-
-
   ]
 }

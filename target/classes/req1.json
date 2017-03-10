@@ -7,8 +7,11 @@
         {
             "name":"b",
             "resource":3
+        },
+        {
+            "name":"c",
+            "resource":4
         }
-
 
     ],
     "links":[
@@ -16,9 +19,17 @@
             "src":"a",
             "dst":"b",
             "resource":3
+        },
+        {
+            "src":"c",
+            "dst":"b",
+            "resource":3
+        },
+        {
+            "src":"c",
+            "dst":"a",
+            "resource":3
         }
-
-
 
     ]
 }
