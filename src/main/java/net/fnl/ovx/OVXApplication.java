@@ -279,7 +279,7 @@ public class OVXApplication {
             Set<String> vertexSet = physicalGraph.vertexSet();
             Collection<String>  availablevertexs = Collections2.filter(vertexSet, new Predicate<String>() {
                 public boolean apply(String vertex) {
-                    return !vAllocationMapCache.values().contains(vertex) && request <= vCostMap.get(vertex);
+                    return !vAllocationMapCache.values().contains(vertex) && request <= vAvailableResourceMap.get(vertex);
                 }
             });
             List<String> availablevertexList = new ArrayList<String>(availablevertexs);
