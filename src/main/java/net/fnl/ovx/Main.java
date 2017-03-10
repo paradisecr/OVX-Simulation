@@ -18,18 +18,18 @@ import java.util.Map;
 public class Main {
 
     public static void main(String args[]) throws Exception {
-//        if (null == args || args.length < 2) return;
-//        String phyNetCfgPath = args[0];
-//        String virNetCfgPath = args[1];
-        String phyNetCfgPath = "D:\\workspace\\OVX\\src\\main\\resources\\phy.json";
-        String virNetCfgPath = "D:\\workspace\\OVX\\src\\main\\resources\\req1.json";
+        if (null == args || args.length < 2) return;
+        String phyNetCfgPath = args[0];
+        String virNetCfgPath = args[1];
+//        String phyNetCfgPath = "D:\\workspace\\OVX\\src\\main\\resources\\phy.json";
+//        String virNetCfgPath = "D:\\workspace\\OVX\\src\\main\\resources\\req1.json";
         // 1.读取物理链路信息
         NetCfg phyNetCfg = readCfg(phyNetCfgPath);
+        OVXApplication ovxApplication = new OVXApplication(phyNetCfg);
         // 2.读取虚拟网络请求信息
         NetCfg virNetCfg = readCfg(virNetCfgPath);
         ResourceRequest resourceRequest = new ResourceRequest(virNetCfg);
         // 3.计算映射
-        OVXApplication ovxApplication = new OVXApplication(phyNetCfg);
         long startTime=System.currentTimeMillis();
         ResourceAllocation resourceAllocation = ovxApplication.processResourceRequest(resourceRequest);
         long endTime=System.currentTimeMillis();
