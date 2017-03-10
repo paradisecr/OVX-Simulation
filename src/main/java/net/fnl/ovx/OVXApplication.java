@@ -239,7 +239,7 @@ public class OVXApplication {
                         isPhysicalVertexAvailable = true;
                     } else {
                         isPhysicalVertexAvailable = false;
-                        break;
+                        continue;
                     }
                     // 扣减临时路径上链路资源
                     GraphPath<String, Edge> path = pathList.iterator().next();
