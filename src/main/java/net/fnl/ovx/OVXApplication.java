@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import org.jgrapht.GraphPath;
 import org.jgrapht.UndirectedGraph;
 import org.jgrapht.alg.shortestpath.KShortestPaths;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 
 import java.util.*;
@@ -21,15 +20,15 @@ public class OVXApplication {
      *     点计算能力、点剩余可分配能力
      *     链路最大可分配带宽、链路剩余可分配带宽
      */
-    UndirectedGraph physicalGraph;
-    Map<String, Long> vCapabilityMap;
-    Map<DefaultEdge, Long> eCapabilityMap;
-    Map<String, Long> vAvailableResourceMap;
-    Map<DefaultEdge, Long> eAvailableResourceMap;
-    Map<String, Long> vCostMap;
-    Map<DefaultEdge, Long> eCostMap;
-    Map<String, String> vAllocationMap = new HashMap<String, String>();
-    Map<DefaultEdge, GraphPath<String, DefaultEdge>> eAllocationMap = new HashMap<DefaultEdge, GraphPath<String, DefaultEdge>>();
+    private UndirectedGraph physicalGraph;
+    private  Map<String, Long> vCapabilityMap;
+    private Map<Edge, Long> eCapabilityMap;
+    private Map<String, Long> vAvailableResourceMap;
+    private Map<Edge, Long> eAvailableResourceMap;
+    private Map<String, Long> vCostMap;
+    private Map<Edge, Long> eCostMap;
+    private Map<String, String> vAllocationMap = new HashMap<String, String>();
+    private Map<Edge, GraphPath<String, Edge>> eAllocationMap = new HashMap<Edge, GraphPath<String, Edge>>();
 
     /**
      * 虚拟网络信息：Map(虚拟网络)--->映射详情
@@ -37,11 +36,11 @@ public class OVXApplication {
     Map<UndirectedGraph, ResourceRequest> resourceAllocationMap = new HashMap<UndirectedGraph, ResourceRequest>();
 
     public OVXApplication(NetCfg netCfg) {
-        this.physicalGraph = new SimpleGraph(DefaultEdge.class);
+        this.physicalGraph = new SimpleGraph(Edge.class);
         this.vCapabilityMap = new HashMap<String, Long>();
-        this.eCapabilityMap = new HashMap<DefaultEdge, Long>();
+        this.eCapabilityMap = new HashMap<Edge, Long>();
         this.vCostMap = new HashMap<String, Long>();
-        this.eCostMap = new HashMap<DefaultEdge, Long>();
+        this.eCostMap = new HashMap<Edge, Long>();
         // vertex
         List<NodeCfg> nodes = netCfg.getNodes();
         for (NodeCfg node : nodes) {
@@ -53,22 +52,22 @@ public class OVXApplication {
         List<LinkCfg> links = netCfg.getLinks();
         for (LinkCfg link : links) {
             this.physicalGraph.addEdge(link.getSrc(), link.getDst());
-            DefaultEdge edge = (DefaultEdge) this.physicalGraph.getEdge(link.getSrc(), link.getDst());
+            Edge edge = (Edge) this.physicalGraph.getEdge(link.getSrc(), link.getDst());
             this.eCapabilityMap.put(edge, link.getResource());
             this.eCostMap.put(edge, link.getCost());
         }
-        this.vAvailableResourceMap = Maps.newHashMap(vCapabilityMap);
-        this.eAvailableResourceMap = Maps.newHashMap(eCapabilityMap);
+        this.vAvailableResourceMap = cloneResource(vCapabilityMap);
+        this.eAvailableResourceMap = cloneResource(eCapabilityMap);
     }
 
-    public OVXApplication(UndirectedGraph physicalGraph, Map<String, Long> vCapabilityMap, Map<DefaultEdge, Long> eCapabilityMap, Map<String, Long> vCostMap, Map<DefaultEdge, Long> eCostMap) {
+    public OVXApplication(UndirectedGraph physicalGraph, Map<String, Long> vCapabilityMap, Map<Edge, Long> eCapabilityMap, Map<String, Long> vCostMap, Map<Edge, Long> eCostMap) {
         this.physicalGraph = physicalGraph;
         this.vCapabilityMap = vCapabilityMap;
         this.eCapabilityMap = eCapabilityMap;
         this.vCostMap = vCostMap;
         this.eCostMap = eCostMap;
-        this.vAvailableResourceMap = Maps.newHashMap(vCapabilityMap);
-        this.eAvailableResourceMap = Maps.newHashMap(eCapabilityMap);
+        this.vAvailableResourceMap = cloneResource(vCapabilityMap);
+        this.eAvailableResourceMap = cloneResource(eCapabilityMap);
     }
 
     public ResourceAllocation processResourceRequest(ResourceRequest resourceRequest) {
@@ -77,8 +76,24 @@ public class OVXApplication {
         return resourceAllocator.getResourceAllocation();
     }
 
+    public Map<String, Long> getvAvailableResourceMap() {
+        return vAvailableResourceMap;
+    }
+
+    public Map<Edge, Long> geteAvailableResourceMap() {
+        return eAvailableResourceMap;
+    }
+
     public long getvertexCapability(String vertex) {
         return vCapabilityMap.get(vertex) * vCostMap.get(vertex);
+    }
+
+    public <T> Map<T, Long> cloneResource(Map<T,Long> srcMap) {
+        Map<T, Long> dstMap = new HashMap<T, Long>();
+        for (T key : srcMap.keySet()) {
+            dstMap.put(key, Long.valueOf(srcMap.get(key)));
+        }
+        return dstMap;
     }
 
     /**
@@ -88,7 +103,7 @@ public class OVXApplication {
         ResourceRequest resourceRequest;
         ResourceAllocation resourceAllocation;
 
-        UndirectedGraph<String, DefaultEdge> virtualGraph;
+        UndirectedGraph<String, Edge> virtualGraph;
         /**
          * 未映射点集合
          * 已映射点集合
@@ -99,10 +114,13 @@ public class OVXApplication {
         Set<String> handledVirtualVertexSet;
 //
 //        Map<String, String> vAllocationMap;
-//        Map<DefaultEdge, GraphPath<String, DefaultEdge>> eAllocationMap;
+//        Map<Edge, GraphPath<String, Edge>> eAllocationMap;
+
+        private Map<String, Long> vAvailableResourceMapCache;
+        private Map<Edge, Long> eAvailableResourceMapCache;
 
         Map<String, String> vAllocationMapCache;
-        Map<DefaultEdge, GraphPath<String, DefaultEdge>> eAllocationMapCache;
+        Map<Edge, GraphPath<String, Edge>> eAllocationMapCache;
 
         boolean isAllocateSuccess = false;
 
@@ -111,8 +129,10 @@ public class OVXApplication {
             this.handledVirtualVertexSet = new HashSet<String>();
             this.virtualGraph = resourceRequest.getVirtualGraph();
             this.unhandledVirtualVertexSet = Sets.newHashSet(this.virtualGraph.vertexSet());
-            this.vAllocationMapCache = Maps.newHashMap(vAllocationMap);
-            this.eAllocationMapCache = Maps.newHashMap(eAllocationMap);
+            this.vAvailableResourceMapCache = cloneResource(vAvailableResourceMap);
+            this.eAvailableResourceMapCache = cloneResource(eAvailableResourceMap);
+            this.vAllocationMapCache = Maps.newHashMap();
+            this.eAllocationMapCache = Maps.newHashMap();
         }
 
         /**
@@ -124,7 +144,7 @@ public class OVXApplication {
             }
             // 映射失败的情况
             if (!isAllocateSuccess) {
-                resourceAllocation = new ResourceAllocation(resourceRequest, vAllocationMap, eAllocationMap, isAllocateSuccess);
+                resourceAllocation = new ResourceAllocation(resourceRequest, new HashMap<String, String>(), new HashMap<Edge, GraphPath<String, Edge>>(), isAllocateSuccess);
                 return isAllocateSuccess;
             }
             /** 映射成功的情况
@@ -132,8 +152,8 @@ public class OVXApplication {
              *  2. 扣减资源
              *  3. 成本计算
              */
-            vAllocationMap = vAllocationMapCache;
-            eAllocationMap = eAllocationMapCache;
+            vAllocationMap.putAll(vAllocationMapCache);
+            eAllocationMap.putAll(eAllocationMapCache);
             resourceAllocation = new ResourceAllocation(resourceRequest, vAllocationMap, eAllocationMap, isAllocateSuccess);
             long totalCost = 0L;
             for (String virtualVertex : vAllocationMap.keySet()) {
@@ -143,10 +163,10 @@ public class OVXApplication {
                 totalCost += request * vCostMap.get(vAllocationMap.get(virtualVertex));
                 vAvailableResourceMap.put(vAllocationMap.get(virtualVertex), left);
             }
-            for (DefaultEdge virtualEdge : eAllocationMap.keySet()) {
-                long request = resourceRequest.getEdgeRequest(virtualEdge);
-                List<DefaultEdge> phyEdgeList = eAllocationMap.get(virtualEdge).getEdgeList();
-                for (DefaultEdge physicalEdge : phyEdgeList) {
+            for (Edge virtualEdge : eAllocationMap.keySet()) {
+                  long request = resourceRequest.getEdgeRequest(virtualEdge);
+                List<Edge> phyEdgeList = eAllocationMap.get(virtualEdge).getEdgeList();
+                for (Edge physicalEdge : phyEdgeList) {
                     long left = eAvailableResourceMap.get(physicalEdge);
                     left -= request;
                     eAvailableResourceMap.put(physicalEdge, left);
@@ -165,7 +185,7 @@ public class OVXApplication {
             // 1. 取一个未映射的虚拟节点
             String vVertex = getRelatedUnhandledvertex();
             //  取所有相关虚拟链路：
-            List<DefaultEdge> relatedVirtualEdgeList = getRelatedVirtualEdge(vVertex);
+            List<Edge> relatedVirtualEdgeList = getRelatedVirtualEdge(vVertex);
             // 2. 取待处理虚拟节点所有可映射的物理节点集合
             List<String> availablePhysicalvertexList = getAvailablePhysicalvertexList(resourceRequest.getVertexRequest(vVertex));
             // 判断可用物理节点是否为空
@@ -175,16 +195,18 @@ public class OVXApplication {
             //  2.1 对每个物理节点做如下处理，选出符合映射条件的物理节点
             boolean findAvailableVertex = false;
             String allocatedPhysicalVertex = null;
-            Map<DefaultEdge, GraphPath<String, DefaultEdge>> allocatedPhysicalPathMap = null;
+            Map<Edge, GraphPath<String, Edge>> allocatedPhysicalPathMap = null;
             // check是否有符合需求的物理节点
             // 存储所有物理节点结果
-            Map<String, Map<DefaultEdge, GraphPath<String, DefaultEdge>>> nodesResult = new HashMap<String, Map<DefaultEdge, GraphPath<String, DefaultEdge>>>();
+            Map<String, Map<Edge, GraphPath<String, Edge>>> nodesResult = new HashMap<String, Map<Edge, GraphPath<String, Edge>>>();
             Map<String, Long> resultCosts = new HashMap<String, Long>();
             for (String physicalvertex : availablePhysicalvertexList) {
-                Map<DefaultEdge, GraphPath<String, DefaultEdge>> edgeMap = new HashMap<DefaultEdge, GraphPath<String, DefaultEdge>>();
+                Map<Edge, GraphPath<String, Edge>> edgeMap = new HashMap<Edge, GraphPath<String, Edge>>();
                 boolean isPhysicalVertexAvailable = false;
+                final Map<String, Long> vAvailableResourceTmp = cloneResource(vAvailableResourceMapCache);
+                final Map<Edge, Long> eAvailableResourceTmp = cloneResource(eAvailableResourceMapCache);
                 //  对每个虚拟链路尝试最短路映射
-                for (final DefaultEdge virtualEdge : relatedVirtualEdgeList) {
+                for (final Edge virtualEdge : relatedVirtualEdgeList) {
                     String virtualSrcVertex = virtualGraph.getEdgeSource(virtualEdge);
                     String virtualDstVertex = virtualGraph.getEdgeTarget(virtualEdge);
                     String phySrcVertex = null;;
@@ -195,20 +217,20 @@ public class OVXApplication {
                         phySrcVertex =  vAllocationMapCache.get(virtualSrcVertex);
                         phyDstVertex = physicalvertex;
                     }
-                    KShortestPaths<String, DefaultEdge> pathService = new KShortestPaths<String, DefaultEdge>(physicalGraph, 4);
-                    List<GraphPath<String, DefaultEdge>> pathList = pathService.getPaths(phySrcVertex, phyDstVertex);
-                    Collection<GraphPath<String, DefaultEdge>> filteredPathList = Collections2.filter(pathList, new Predicate<GraphPath<String, DefaultEdge>>() {
-                        public boolean apply(GraphPath<String, DefaultEdge> stringDefaultEdgeGraphPath) {
-                            List<DefaultEdge> edgeList = stringDefaultEdgeGraphPath.getEdgeList();
-                            for (DefaultEdge edge : edgeList) {
-                                if (eCapabilityMap.get(edge) < resourceRequest.getEdgeRequest(virtualEdge)) return false;
+                    KShortestPaths<String, Edge> pathService = new KShortestPaths<String, Edge>(physicalGraph, 4);
+                    List<GraphPath<String, Edge>> pathList = pathService.getPaths(phySrcVertex, phyDstVertex);
+                    Collection<GraphPath<String, Edge>> filteredPathList = Collections2.filter(pathList, new Predicate<GraphPath<String, Edge>>() {
+                        public boolean apply(GraphPath<String, Edge> stringEdgeGraphPath) {
+                            List<Edge> edgeList = stringEdgeGraphPath.getEdgeList();
+                            for (Edge edge : edgeList) {
+                                if (eAvailableResourceTmp.get(edge) < resourceRequest.getEdgeRequest(virtualEdge)) return false;
                             }
                             return true;
                         }
                     });
-                    pathList = new ArrayList<GraphPath<String, DefaultEdge>>(filteredPathList);
-                    Collections.sort(pathList,new Comparator<GraphPath<String, DefaultEdge>>() {
-                        public int compare(GraphPath<String, DefaultEdge> o1, GraphPath<String, DefaultEdge> o2) {
+                    pathList = new ArrayList<GraphPath<String, Edge>>(filteredPathList);
+                    Collections.sort(pathList,new Comparator<GraphPath<String, Edge>>() {
+                        public int compare(GraphPath<String, Edge> o1, GraphPath<String, Edge> o2) {
                             return o1.getEdgeList().size() - o2.getEdgeList().size();
                         }
                     });
@@ -218,6 +240,14 @@ public class OVXApplication {
                     } else {
                         isPhysicalVertexAvailable = false;
                         break;
+                    }
+                    // 扣减临时路径上链路资源
+                    GraphPath<String, Edge> path = pathList.iterator().next();
+                    long request = resourceRequest.getEdgeRequest(virtualEdge);
+                    for (Edge edge : path.getEdgeList()) {
+                        long remain = eAvailableResourceTmp.get(edge);
+                        remain -= request;
+                        eAvailableResourceTmp.put(edge, remain);
                     }
                 }
                 if (isPhysicalVertexAvailable || relatedVirtualEdgeList.isEmpty()) {
@@ -241,19 +271,42 @@ public class OVXApplication {
                 eAllocationMapCache.putAll(nodesResult.get(bestPhyVertex));
                 unhandledVirtualVertexSet.remove(vVertex);
                 handledVirtualVertexSet.add(vVertex);
+                //扣除cache中的资源
+                Map<Edge, GraphPath<String, Edge>> bestPathMap = nodesResult.get(bestPhyVertex);;
+                for (Edge vEdge : bestPathMap.keySet()) {
+                    GraphPath<String, Edge> path = bestPathMap.get(vEdge);
+                    long request = resourceRequest.getEdgeRequest(vEdge);
+                    for (Edge edge : path.getEdgeList()) {
+                        long remain = eAvailableResourceMapCache.get(edge);
+                        remain -= request;
+                        eAvailableResourceMapCache.put(edge, remain);
+                    }
+                }
+                long request = resourceRequest.getVertexRequest(vVertex);
+                long remain = vAvailableResourceMapCache.get(bestPhyVertex);
+                remain -= request;
+                vAvailableResourceMapCache.put(bestPhyVertex, remain);
                 return true;
             }
             return false;
         }
 
 
-        private long caculateCost(String phyVertex, long vRequest, Map<DefaultEdge, GraphPath<String, DefaultEdge>> edgeMap) {
+        private long caculateCost(String phyVertex, long vRequest, Map<Edge, GraphPath<String, Edge>> edgeMap) {
             long result = vCostMap.get(phyVertex) * vRequest;
-            for (DefaultEdge vEdge : edgeMap.keySet()) {
-                GraphPath<String, DefaultEdge> path = edgeMap.get(vEdge);
-                for (DefaultEdge edge : path.getEdgeList()){
+            for (Edge vEdge : edgeMap.keySet()) {
+                GraphPath<String, Edge> path = edgeMap.get(vEdge);
+                for (Edge edge : path.getEdgeList()){
                     result += eCostMap.get(edge) * resourceRequest.getEdgeRequest(vEdge);
                 }
+            }
+            return result;
+        }
+
+        private long caculatePathCost(GraphPath<String, Edge> path, Edge vEdge) {
+            long result = 0L;
+            for (Edge edge : path.getEdgeList()){
+                result += eCostMap.get(edge) * resourceRequest.getEdgeRequest(vEdge);
             }
             return result;
         }
@@ -262,13 +315,13 @@ public class OVXApplication {
          * @param vertex
          * @return
          */
-        private List<DefaultEdge> getRelatedVirtualEdge(final String vertex) {
-            Collection<DefaultEdge> collection = Collections2.filter(virtualGraph.edgesOf(vertex), new Predicate<DefaultEdge>() {
-                public boolean apply(DefaultEdge defaultEdge) {
+        private List<Edge> getRelatedVirtualEdge(final String vertex) {
+            Collection<Edge> collection = Collections2.filter(virtualGraph.edgesOf(vertex), new Predicate<Edge>() {
+                public boolean apply(Edge defaultEdge) {
                     return handledVirtualVertexSet.contains(virtualGraph.getEdgeTarget(defaultEdge)) || handledVirtualVertexSet.contains(virtualGraph.getEdgeSource(defaultEdge));
                 }
             });
-            return new ArrayList<DefaultEdge>(collection);
+            return new ArrayList<Edge>(collection);
         }
 
         /**
@@ -318,9 +371,9 @@ public class OVXApplication {
         }
 
         private Set<String> getRelatedVertexSet(UndirectedGraph graph, String vertex) {
-            Set<DefaultEdge> edgeSet =  graph.edgesOf(vertex);
+            Set<Edge> edgeSet =  graph.edgesOf(vertex);
             Set<String> relatedvertexSet = new HashSet<String>();
-            for (DefaultEdge edge : edgeSet) {
+            for (Edge edge : edgeSet) {
                 relatedvertexSet.add((String) graph.getEdgeTarget(edge));
             }
             return relatedvertexSet;

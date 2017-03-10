@@ -1,7 +1,6 @@
 package net.fnl.ovx;
 
 import org.jgrapht.UndirectedGraph;
-import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 import org.w3c.dom.Node;
 
@@ -20,12 +19,12 @@ public class ResourceRequest {
      */
     UndirectedGraph virtualGraph;
     Map<String, Long> vCapabilityRequestMap;
-    Map<DefaultEdge, Long> eCapabilityRequestMap;
+    Map<Edge, Long> eCapabilityRequestMap;
 
     public ResourceRequest(NetCfg netCfg) {
-        this.virtualGraph = new SimpleGraph(DefaultEdge.class);
+        this.virtualGraph = new SimpleGraph(Edge.class);
         this.vCapabilityRequestMap = new HashMap<String, Long>();
-        this.eCapabilityRequestMap = new HashMap<DefaultEdge, Long>();
+        this.eCapabilityRequestMap = new HashMap<Edge, Long>();
         // vertex
         List<NodeCfg> nodes = netCfg.getNodes();
         for (NodeCfg node : nodes) {
@@ -36,12 +35,12 @@ public class ResourceRequest {
         List<LinkCfg> links = netCfg.getLinks();
         for (LinkCfg link : links) {
             this.virtualGraph.addEdge(link.getSrc(), link.getDst());
-            DefaultEdge edge = (DefaultEdge) this.virtualGraph.getEdge(link.getSrc(), link.getDst());
+            Edge edge = (Edge) this.virtualGraph.getEdge(link.getSrc(), link.getDst());
             this.eCapabilityRequestMap.put(edge, link.getResource());
         }
     }
 
-    public ResourceRequest(UndirectedGraph virtualGraph, Map<String, Long> vCapabilityRequestMap, Map<DefaultEdge, Long> eCapabilityRequestMap) {
+    public ResourceRequest(UndirectedGraph virtualGraph, Map<String, Long> vCapabilityRequestMap, Map<Edge, Long> eCapabilityRequestMap) {
         this.virtualGraph = virtualGraph;
         this.vCapabilityRequestMap = vCapabilityRequestMap;
         this.eCapabilityRequestMap = eCapabilityRequestMap;
@@ -59,7 +58,15 @@ public class ResourceRequest {
         return vCapabilityRequestMap.get(vertex);
     }
 
-    public long getEdgeRequest(DefaultEdge edge) {
+    public long getEdgeRequest(Edge edge) {
         return eCapabilityRequestMap.get(edge);
+    }
+
+    public Map<String, Long> getvCapabilityRequestMap() {
+        return vCapabilityRequestMap;
+    }
+
+    public Map<Edge, Long> geteCapabilityRequestMap() {
+        return eCapabilityRequestMap;
     }
 }

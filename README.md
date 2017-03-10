@@ -1,6 +1,6 @@
 OVX-Java仿真 v1.0版本 
 
-版本说明：1.0版本每次运行只能运行一次映射，下一个版本将增加多次映射功能。
+版本说明：1.1版本每次运行只能运行一次映射，下一个版本将增加多次映射功能。
 
 
 ## 1. 运行环境
@@ -18,20 +18,46 @@ OVX-Java仿真 v1.0版本
 编译方法：
 
 ```
-mvn install
+mvn clean install
 ```
 
 运行示例：
 ```
-java -jar ovx-simulation-jar-with-dependencies.jar 物理网络参数文件地址 虚拟网络参数文件地址
+java -jar ovx-simulation-jar-with-dependencies.jar
 
+Please input physical topology param description file path(e.g, ~/params/phy.json): 物理网络参数文件地址
+**************************************************
+Please input resource request param description file path: 虚拟网络参数文件地址
+Request:
+{s3=100, s4=100, s1=1, s2=100}
+{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
 ResourceAllocation{
-vAllocationMap={v1=s1, v2=s3, v3=s2, v4=s4},
-eAllocationMap={(v2 : v4)=[(s3 : s4)], (v1 : v3)=[(s1 : s2)], (v3 : v4)=[(s2 : s4)], (v1 : v2)=[(s1 : s3)]},
-isAllocationSuccess=true}
-Total Cost:200
-Run time：178ms
-
+vAllocationMap={},
+eAllocationMap={},
+isAllocationSuccess=false}
+Total Cost:0
+Run time：168ms
+*******
+Remain Resource:
+Nodes:{s3=100, s4=100, s1=1, s2=100}
+Links:{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
+**************************************************
+Please input resource request param description file path:虚拟网络参数文件地址2
+Request:
+{s3=100, s4=100, s1=1, s2=100}
+{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
+ResourceAllocation{
+vAllocationMap={},
+eAllocationMap={},
+isAllocationSuccess=false}
+Total Cost:0
+Run time：0ms
+*******
+Remain Resource:
+Nodes:{s3=100, s4=100, s1=1, s2=100}
+Links:{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
+**************************************************
+Ctr + D Exit
 ```
 
 ### 2.1 参数：
@@ -169,10 +195,17 @@ Run time：178ms
 ### 2.2 输出说明
 
 ````
-ResourceAllocation{
-vAllocationMap={v1=s1, v2=s3, v3=s2, v4=s4},   //虚拟节点--->物理节点映射
-eAllocationMap={(v2 : v4)=[(s3 : s4)], (v1 : v3)=[(s1 : s2)], (v3 : v4)=[(s2 : s4)], (v1 : v2)=[(s1 : s3)]},  //虚拟链路--->物理路径映射
-isAllocationSuccess=true}
-Total Cost:200
-Run time：178ms
+Request:                         # Resource request params
+{s3=100, s4=100, s1=1, s2=100}
+{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
+ResourceAllocation{              # Resource mapping result
+vAllocationMap={},
+eAllocationMap={},
+isAllocationSuccess=false}
+Total Cost:0
+Run time：0ms
+*******
+Remain Resource:                 # Remain source info
+Nodes:{s3=100, s4=100, s1=1, s2=100}
+Links:{(s1 : s2)=100, (s3 : s4)=100, (s1 : s4)=100, (s1 : s3)=100, (s2 : s4)=100}
 ```

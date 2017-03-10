@@ -1,7 +1,6 @@
 package net.fnl.ovx;
 
 import org.jgrapht.GraphPath;
-import org.jgrapht.graph.DefaultEdge;
 
 import java.util.Map;
 
@@ -11,11 +10,11 @@ import java.util.Map;
 public class ResourceAllocation {
     ResourceRequest resourceRequest;
     Map<String, String> vAllocationMap;
-    Map<DefaultEdge, GraphPath<String, DefaultEdge>> eAllocationMap;
+    Map<Edge, GraphPath<String, Edge>> eAllocationMap;
     long totalCost = 0L;
     boolean isAllocationSuccess;
 
-    public ResourceAllocation(ResourceRequest resourceRequest, Map<String, String> vAllocationMap, Map<DefaultEdge, GraphPath<String, DefaultEdge>> eAllocationMap, boolean isAllocationSuccess) {
+    public ResourceAllocation(ResourceRequest resourceRequest, Map<String, String> vAllocationMap, Map<Edge, GraphPath<String, Edge>> eAllocationMap, boolean isAllocationSuccess) {
         this.resourceRequest = resourceRequest;
         this.vAllocationMap = vAllocationMap;
         this.eAllocationMap = eAllocationMap;

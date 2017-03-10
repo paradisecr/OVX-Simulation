@@ -4,7 +4,7 @@
 
     <groupId>me.rui</groupId>
     <artifactId>OVX-simutation</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>deep-in-java</name>
