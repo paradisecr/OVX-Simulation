@@ -1,0 +1,24 @@
+{
+    "nodes":[
+        {
+            "name":"a",
+            "resource":5
+        },
+        {
+            "name":"b",
+            "resource":3
+        }
+
+
+    ],
+    "links":[
+        {
+            "src":"a",
+            "dst":"b",
+            "resource":3
+        }
+
+
+
+    ]
+}
