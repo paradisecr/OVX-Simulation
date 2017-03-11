@@ -372,11 +372,11 @@ public class OVXApplication {
 
         private Set<String> getRelatedVertexSet(UndirectedGraph graph, String vertex) {
             Set<Edge> edgeSet =  graph.edgesOf(vertex);
-            Set<String> relatedvertexSet = new HashSet<String>();
+            Set<String> relatedVertexSet = new HashSet<String>();
             for (Edge edge : edgeSet) {
-                relatedvertexSet.add((String) graph.getEdgeTarget(edge));
+                relatedVertexSet.add((String) graph.getEdgeTarget(edge));
             }
-            return relatedvertexSet;
+            return relatedVertexSet;
         }
     }
 }
