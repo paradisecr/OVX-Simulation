@@ -505,11 +505,11 @@ public class OVXApplication {
 
         private Set<String> getRelatedVertexSet(UndirectedGraph graph, String vertex) {
             Set<Edge> edgeSet =  graph.edgesOf(vertex);
-            Set<String> relatedVertexSet = new HashSet<String>();
+            Set<String> relatedvertexSet = new HashSet<String>();
             for (Edge edge : edgeSet) {
-                relatedVertexSet.add((String) graph.getEdgeTarget(edge));
+                relatedvertexSet.add((String) graph.getEdgeTarget(edge));
             }
-            return relatedVertexSet;
+            return relatedvertexSet;
         }
     }
 }
