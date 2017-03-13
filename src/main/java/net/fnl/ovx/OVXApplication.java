@@ -36,6 +36,16 @@ public class OVXApplication {
      */
     Map<UndirectedGraph, ResourceRequest> resourceAllocationMap = new HashMap<UndirectedGraph, ResourceRequest>();
 
+    public OVXApplication() {
+        this.physicalGraph = new SimpleGraph(Edge.class);
+        this.vCapabilityMap = new HashMap<String, Long>();
+        this.eCapabilityMap = new HashMap<Edge, Long>();
+        this.vCostMap = new HashMap<String, Long>();
+        this.eCostMap = new HashMap<Edge, Long>();
+        this.vAvailableResourceMap = cloneResource(vCapabilityMap);
+        this.eAvailableResourceMap = cloneResource(eCapabilityMap);
+    }
+
     public OVXApplication(NetCfg netCfg) {
         this.physicalGraph = new SimpleGraph(Edge.class);
         this.vCapabilityMap = new HashMap<String, Long>();
@@ -57,8 +67,8 @@ public class OVXApplication {
             this.eCapabilityMap.put(edge, link.getResource());
             this.eCostMap.put(edge, link.getCost());
         }
-        this.vAvailableResourceMap = cloneResource(vCapabilityMap);
-        this.eAvailableResourceMap = cloneResource(eCapabilityMap);
+        cloneResource(vCapabilityMap, this.vAvailableResourceMap);
+        cloneResource(eCapabilityMap, this.eAvailableResourceMap);
     }
 
     public OVXApplication(UndirectedGraph physicalGraph, Map<String, Long> vCapabilityMap, Map<Edge, Long> eCapabilityMap, Map<String, Long> vCostMap, Map<Edge, Long> eCostMap) {
@@ -67,6 +77,26 @@ public class OVXApplication {
         this.eCapabilityMap = eCapabilityMap;
         this.vCostMap = vCostMap;
         this.eCostMap = eCostMap;
+        this.vAvailableResourceMap = cloneResource(vCapabilityMap);
+        this.eAvailableResourceMap = cloneResource(eCapabilityMap);
+    }
+
+    public void addResource(NetCfg netCfg) {
+        // vertex
+        List<NodeCfg> nodes = netCfg.getNodes();
+        for (NodeCfg node : nodes) {
+            this.physicalGraph.addVertex(node.getName());
+            this.vCapabilityMap.put(node.getName(), node.getResource());
+            this.vCostMap.put(node.getName(), node.getCost());
+        }
+        // links
+        List<LinkCfg> links = netCfg.getLinks();
+        for (LinkCfg link : links) {
+            this.physicalGraph.addEdge(link.getSrc(), link.getDst());
+            Edge edge = (Edge) this.physicalGraph.getEdge(link.getSrc(), link.getDst());
+            this.eCapabilityMap.put(edge, link.getResource());
+            this.eCostMap.put(edge, link.getCost());
+        }
         this.vAvailableResourceMap = cloneResource(vCapabilityMap);
         this.eAvailableResourceMap = cloneResource(eCapabilityMap);
     }
@@ -95,6 +125,17 @@ public class OVXApplication {
             dstMap.put(key, Long.valueOf(srcMap.get(key)));
         }
         return dstMap;
+    }
+
+    public <T> Map<T, Long> cloneResource(Map<T,Long> srcMap, Map<T,Long> dstMap) {
+        for (T key : srcMap.keySet()) {
+            dstMap.put(key, Long.valueOf(srcMap.get(key)));
+        }
+        return dstMap;
+    }
+
+    public UndirectedGraph getPhysicalGraph(){
+        return physicalGraph;
     }
 
     /**
@@ -234,6 +275,8 @@ public class OVXApplication {
                         isPhysicalVertexAvailable = false;
                         break;
                     }
+                    // Resort edge in path
+
                     // 扣减临时路径上链路资源，并记录链路映射
                     edgeMap.put(virtualEdge, path);
                     long request = resourceRequest.getEdgeRequest(virtualEdge);

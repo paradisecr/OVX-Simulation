@@ -21,7 +21,7 @@ import java.util.*;
 public class GraphTest {
     @Test
     public void kPathTest() {
-        final UndirectedGraph<java.lang.String, DefaultEdge> graph = new SimpleGraph(DefaultEdge.class);
+        final UndirectedGraph graph = new SimpleGraph(DefaultEdge.class);
         final java.lang.String v1 = "v1";
         final java.lang.String v2 = "v2";
         java.lang.String v3 = "v3";

@@ -21,6 +21,14 @@ public class ResourceAllocation {
         this.isAllocationSuccess = isAllocationSuccess;
     }
 
+    public Map<String, String> getvAllocationMap() {
+        return vAllocationMap;
+    }
+
+    public Map<Edge, GraphPath<String, Edge>> geteAllocationMap() {
+        return eAllocationMap;
+    }
+
     public long getTotalCost() {
         return totalCost;
     }

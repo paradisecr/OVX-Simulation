@@ -8,9 +8,45 @@ import java.util.List;
 public class NetCfg {
     private List<NodeCfg> nodes;
     private List<LinkCfg> links;
+    private String controllerAddress;
+    private String net;
+    private String netMask;
+    private String tenantId;
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+    }
 
     public List<NodeCfg> getNodes() {
         return nodes;
+    }
+
+    public String getControllerAddress() {
+        return controllerAddress;
+    }
+
+    public void setControllerAddress(String controllerAddress) {
+        this.controllerAddress = controllerAddress;
+    }
+
+    public String getNet() {
+        return net;
+    }
+
+    public void setNet(String net) {
+        this.net = net;
+    }
+
+    public String getNetMask() {
+        return netMask;
+    }
+
+    public void setNetMask(String netMask) {
+        this.netMask = netMask;
     }
 
     public void setNodes(List<NodeCfg> nodes) {

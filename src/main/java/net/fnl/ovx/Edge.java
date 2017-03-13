@@ -6,6 +6,17 @@ import org.jgrapht.graph.DefaultEdge;
  * Created by cr on 2017/3/10.
  */
 public class Edge  extends DefaultEdge {
+
+    @Override
+    public Object getSource() {
+        return super.getSource();
+    }
+
+    @Override
+    public Object getTarget() {
+        return super.getTarget();
+    }
+
     @Override
     public int hashCode() {
         Object src = getSource();
