@@ -1,6 +1,8 @@
-OVX-Java仿真 v1.2-as-dep 版本 
+OVX-Java仿真 v2.0 版本
 
 版本说明：
+
+v2.0: Final completed version.
 
 1.2-as-dep version: Can be include as resource allocation computer.
 
